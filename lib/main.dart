@@ -11,9 +11,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     ValueNotifier<Client> client = ValueNotifier(
       Client(
-        endPoint: 'http://staginggraphql-348048981.us-east-1.elb.amazonaws.com/graphql',
+        endPoint: 'http://staginggraphql-*************.amazonaws.com/graphql',
         cache: InMemoryCache(),
-        apiToken: '7766e718aea144866a27b604edf2f8b3759af12e',
+        apiToken: '7766e718aea14486*************',
       ),
     );
 
