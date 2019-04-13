@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+String yearRequest = """
+query {
+seasons {
+  year
+}
+}
+""";
 
 void main() {
   runApp(MyApp());
@@ -9,15 +16,20 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    ValueNotifier<Client> client = ValueNotifier(
-      Client(
-        endPoint: 'http://staginggraphql-*************.amazonaws.com/graphql',
-        cache: InMemoryCache(),
-        apiToken: '7766e718aea14486*************',
-      ),
+    final HttpLink httpLink = HttpLink(
+      uri: 'http://staginggraphql-*****.amazonaws.com/graphql',
+      headers: <String, String>{
+        'x-token': '*******',
+      },
     );
 
-    return GraphqlProvider(
+    final Link link = httpLink;
+
+    ValueNotifier<GraphQLClient> client = ValueNotifier(
+      GraphQLClient(cache: InMemoryCache(), link: link),
+    );
+
+    return GraphQLProvider(
       client: client,
       child: CacheProvider(
         child: MaterialApp(
@@ -46,49 +58,56 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Query(
-            "{" +
-            "seasons{" +
-            "year"+
-            "    }" +
-            "  }",
-        builder: ({
-          bool loading,
-          Map data,
-          Exception error,
-        }) {
-          if (error != null) {
-            return Text(error.toString());
-          }
-
-          if (loading) {
-            return Text('Loading');
-          }
-
-
-          // it can be either Map or List
-          List feedList = data['seasons'];
-
-          return ListView.builder(
-            itemCount: feedList.length,
-            itemBuilder: (context, index) {
-              final feedListItems = feedList[index];
-              // List tagList = feedListItems['name'];
-              return new Card(
-                margin: const EdgeInsets.all(10.0),
-                child: ListTile(
-                  title: new Text(feedListItems['year']),
-                ),
-              );
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Query(
+          options: QueryOptions(
+            document: yearRequest, // this is the query string you just created
+            variables: {
+              'nRepositories': 50,
             },
-          );
-        },
-      ),
-    );
+            pollInterval: 10,
+          ),
+          builder: (QueryResult result) {
+            if (result.errors != null) {
+              return Text(result.errors.toString());
+            }
+
+            if (result.loading) {
+              return Text('Loading');
+            }
+
+            // it can be either Map or List
+            print(result.data);
+
+            return FloatingActionButton(
+              onPressed: () => print("pressed"),
+              tooltip: 'Star',
+              child: Icon(Icons.star),
+            );
+          },
+        ));
   }
 }
+
+// Mutation(
+//   options: MutationOptions(
+//     document: "", // add mutation query here babes
+//   ),
+//   builder: (
+//     RunMutation runMutation,
+//     QueryResult result,
+//   ) {
+//     return FloatingActionButton(
+//       onPressed: () => runMutation({
+
+//       }),
+//       tooltip: 'Star',
+//       child: Icon(Icons.star),
+//     );
+//   },
+// );
