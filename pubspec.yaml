@@ -18,7 +18,6 @@ environment:
 
 dependencies:
   graphql_flutter: ^1.0.0-beta.1
-  http:
   flutter:
     sdk: flutter
 
